@@ -5,8 +5,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
 
 jobs:
   publish:
@@ -20,8 +18,6 @@ jobs:
             name: Andersoft.CodeAnalysis
           - path: src/Andersoft.CodeAnalysis.EntityFramework
             name: Andersoft.CodeAnalysis.EntityFramework
-          - path: src/Andersoft.CQRS
-            name: Andersoft.CQRS
 
     steps:
       - name: Checkout
@@ -55,7 +51,6 @@ jobs:
           --skip-duplicate
 
       - name: Publish to NuGet.org
-        if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
         run: >
           dotnet nuget push ./nupkgs/${{ matrix.project.name }}.*.nupkg
           --source https://api.nuget.org/v3/index.json
