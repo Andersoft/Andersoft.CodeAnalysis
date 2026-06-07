@@ -10,7 +10,9 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f369fed3-eb6d-4e5c-ae7f-cf8307d6e67e" name="Changes" comment="" />
+    <list default="true" id="f369fed3-eb6d-4e5c-ae7f-cf8307d6e67e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Directory.Build.props" beforeDir="false" afterPath="$PROJECT_DIR$/Directory.Build.props" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,6 +21,21 @@
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="26" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Andersoft"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:Andersoft/Andersoft.CodeAnalysis.git",
+    "accountId": "5fe16d05-383e-4fe6-9e88-1b62832dcf89"
+  }
+}]]></component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -44,6 +61,7 @@
     "cidr.known.project.marker": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/home/oem/repos/Raph/Analyers/.github",
     "node.js.detected.package.eslint": "true",
@@ -63,7 +81,7 @@
       <option name="presentableId" value="Default" />
       <updated>1780829357517</updated>
       <workItem from="1780829358523" duration="4600000" />
-      <workItem from="1780835072422" duration="437000" />
+      <workItem from="1780835072422" duration="889000" />
     </task>
     <servers />
   </component>
