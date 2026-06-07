@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Andersoft.CodeAnalysis.EntityFramework/Andersoft.CodeAnalysis.EntityFramework.csproj" />
+    <Project Path="src/Andersoft.CodeAnalysis/Andersoft.CodeAnalysis.csproj" />
+  </Folder>
+</Solution>
