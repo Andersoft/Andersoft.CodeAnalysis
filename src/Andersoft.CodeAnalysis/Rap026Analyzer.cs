@@ -69,7 +69,7 @@ internal static partial class ArchitectureConventionsAnalyzer
             return;
         }
 
-        var layer = IsDomainNamespace(containingNamespace) ? "Domain" : "Application";
+        var layer = GetLayerLabel(containingNamespace);
 
         Report(context, Diagnostic.Create(
             Rap026Analyzer.Rule,

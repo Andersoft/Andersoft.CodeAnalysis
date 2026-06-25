@@ -8,30 +8,33 @@ namespace Andersoft.CodeAnalysis;
 
 internal static partial class ArchitectureConventionsAnalyzer
 {
-    private static bool IsAllowedTimeBoundaryUsage(string filePath, string namespaceText)
+    // Layer label used purely for diagnostic messages. Rules no longer gate on
+    // layer (applicability is driven by .editorconfig), so this must return a
+    // sensible value for every layer rather than assuming Domain/Application.
+    private static string GetLayerLabel(string namespaceText)
     {
-        if (namespaceText.Contains(".Tests", StringComparison.Ordinal))
+        if (NamespaceHasSegment(namespaceText, "Domain"))
         {
-            return true;
+            return "Domain";
         }
 
-        var normalizedPath = filePath.Replace('\\', '/');
-        return normalizedPath.Contains("/Migrations/", StringComparison.OrdinalIgnoreCase) ||
-            normalizedPath.Contains("/Presentation/Contracts/", StringComparison.OrdinalIgnoreCase);
+        if (NamespaceHasSegment(namespaceText, "Application"))
+        {
+            return "Application";
+        }
+
+        if (NamespaceHasSegment(namespaceText, "Infrastructure"))
+        {
+            return "Infrastructure";
+        }
+
+        if (NamespaceHasSegment(namespaceText, "Presentation"))
+        {
+            return "Presentation";
+        }
+
+        return "Unknown";
     }
-
-    private static bool IsDomainOrApplication(string namespaceText) =>
-        namespaceText.Contains(".Domain.", StringComparison.Ordinal) ||
-        namespaceText.Contains(".Application.", StringComparison.Ordinal);
-
-    private static bool IsDomainOrApplicationOrTerminal(string namespaceText) =>
-        IsDomainOrApplication(namespaceText) ||
-        namespaceText.EndsWith(".Domain", StringComparison.Ordinal) ||
-        namespaceText.EndsWith(".Application", StringComparison.Ordinal);
-
-    private static bool IsDomainNamespace(string namespaceText) =>
-        namespaceText.Contains(".Domain.", StringComparison.Ordinal) ||
-        namespaceText.EndsWith(".Domain", StringComparison.Ordinal);
 
     private static string GetContainingNamespace(SyntaxNode node)
     {
@@ -359,12 +362,7 @@ internal static partial class ArchitectureConventionsAnalyzer
         layer = string.Empty;
 
         var namespaceText = GetContainingNamespace(nullableType);
-        if (!IsDomainOrApplication(namespaceText))
-        {
-            return false;
-        }
-
-        layer = namespaceText.Contains(".Domain.", StringComparison.Ordinal) ? "Domain" : "Application";
+        layer = GetLayerLabel(namespaceText);
 
         if (nullableType.Parent is MethodDeclarationSyntax method &&
             ReferenceEquals(method.ReturnType, nullableType))

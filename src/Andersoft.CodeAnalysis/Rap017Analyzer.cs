@@ -34,11 +34,6 @@ internal static partial class ArchitectureConventionsAnalyzer
         string containingType,
         string propertyName)
     {
-        if (IsAllowedTimeBoundaryUsage(memberAccess.SyntaxTree.FilePath, containingNamespace))
-        {
-            return;
-        }
-
         var owner = context.ContainingSymbol?.ContainingType?.Name ?? "UnknownType";
         Report(context, Diagnostic.Create(
             Rap017Analyzer.Rule,

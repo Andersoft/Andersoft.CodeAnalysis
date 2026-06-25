@@ -87,10 +87,6 @@ internal static partial class ArchitectureConventionsAnalyzer
         }
 
         var containingNamespace = GetContainingNamespace(memberAccess);
-        if (!IsDomainOrApplication(containingNamespace))
-        {
-            return;
-        }
 
         var symbol = context.SemanticModel.GetSymbolInfo(memberAccess).Symbol;
         if (symbol is not IPropertySymbol propertySymbol)
@@ -103,7 +99,7 @@ internal static partial class ArchitectureConventionsAnalyzer
         if ((containingType is "System.DateTime" or "System.DateTimeOffset") &&
             (propertyName is "Now" or "UtcNow"))
         {
-            var layer = containingNamespace.Contains(".Domain.", StringComparison.Ordinal) ? "Domain" : "Application";
+            var layer = GetLayerLabel(containingNamespace);
             AnalyzeRap003SystemClockUsage(context, memberAccess, containingType!, propertyName, layer);
             AnalyzeRap017GlobalNowUsage(context, memberAccess, containingNamespace, containingType!, propertyName);
         }
@@ -122,12 +118,6 @@ internal static partial class ArchitectureConventionsAnalyzer
         }
 
         var containingNamespace = GetContainingNamespace(methodDeclaration);
-        if (!IsDomainOrApplication(containingNamespace) &&
-            !containingNamespace.Contains(".Infrastructure.", StringComparison.Ordinal) &&
-            !containingNamespace.Contains(".Presentation.", StringComparison.Ordinal))
-        {
-            return;
-        }
 
         if (context.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
         {
@@ -146,23 +136,17 @@ internal static partial class ArchitectureConventionsAnalyzer
             AnalyzeRap004MissingCancellationToken(context, methodDeclaration, methodSymbol);
         }
 
-        var enforcePrimitiveIdParameters = IsDomainOrApplication(containingNamespace) ||
-            NamespaceHasSegment(containingNamespace, "Presentation");
-
-        if (enforcePrimitiveIdParameters)
+        foreach (var parameter in methodSymbol.Parameters)
         {
-            foreach (var parameter in methodSymbol.Parameters)
+            if (!parameter.Name.EndsWith("id", StringComparison.OrdinalIgnoreCase))
             {
-                if (!parameter.Name.EndsWith("id", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                var typeName = parameter.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-                if (IsPrimitiveIdType(parameter.Type))
-                {
-                    AnalyzeRap005PrimitiveIdParameter(context, parameter, typeName);
-                }
+            var typeName = parameter.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+            if (IsPrimitiveIdType(parameter.Type))
+            {
+                AnalyzeRap005PrimitiveIdParameter(context, parameter, typeName);
             }
         }
 
@@ -228,11 +212,6 @@ internal static partial class ArchitectureConventionsAnalyzer
         }
 
         var containingNamespace = GetContainingNamespace(context.Node);
-        if (!IsDomainOrApplicationOrTerminal(containingNamespace))
-        {
-            return;
-        }
-
         AnalyzeRap024StronglyTypedIdMembers(context, containingNamespace);
     }
 
@@ -261,12 +240,6 @@ internal static partial class ArchitectureConventionsAnalyzer
         }
 
         if (IsGeneratedFile(nullableType.SyntaxTree.FilePath))
-        {
-            return;
-        }
-
-        var containingNamespace = GetContainingNamespace(nullableType);
-        if (!IsDomainOrApplication(containingNamespace))
         {
             return;
         }

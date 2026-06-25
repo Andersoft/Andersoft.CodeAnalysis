@@ -29,7 +29,7 @@ internal static partial class ArchitectureConventionsAnalyzer
 {
     private static void AnalyzeRap024StronglyTypedIdMembers(SyntaxNodeAnalysisContext context, string containingNamespace)
     {
-        var layerName = IsDomainNamespace(containingNamespace) ? "Domain" : "Application";
+        var layerName = GetLayerLabel(containingNamespace);
 
         switch (context.Node)
         {
