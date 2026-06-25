@@ -244,13 +244,15 @@ internal static partial class ArchitectureConventionsAnalyzer
             return;
         }
 
-        if (!TryDescribeNullableContractTarget(nullableType, out var targetKind, out var targetName, out var layer))
+        if (!TryDescribeNullableContractTarget(nullableType, out var targetKind, out var targetName))
         {
             return;
         }
 
-        var typeInfo = context.SemanticModel.GetTypeInfo(nullableType).Type;
-        var displayType = typeInfo?.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat) ?? nullableType.ToString();
-        AnalyzeRap013NullableContractsAndState(context, nullableType, targetKind, targetName, layer, displayType);
+        // Use the syntax node directly so the displayed type always keeps its '?'
+        // annotation. The semantic display string drops '?' on reference types in
+        // a nullable-enabled context (e.g. 'DbContext' instead of 'DbContext?').
+        var displayType = nullableType.ToString();
+        AnalyzeRap013NullableContractsAndState(context, nullableType, targetKind, targetName, displayType);
     }
 }

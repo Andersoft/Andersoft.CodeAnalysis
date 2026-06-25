@@ -354,15 +354,10 @@ internal static partial class ArchitectureConventionsAnalyzer
     private static bool TryDescribeNullableContractTarget(
         NullableTypeSyntax nullableType,
         out string targetKind,
-        out string targetName,
-        out string layer)
+        out string targetName)
     {
         targetKind = string.Empty;
         targetName = string.Empty;
-        layer = string.Empty;
-
-        var namespaceText = GetContainingNamespace(nullableType);
-        layer = GetLayerLabel(namespaceText);
 
         if (nullableType.Parent is MethodDeclarationSyntax method &&
             ReferenceEquals(method.ReturnType, nullableType))
