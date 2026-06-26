@@ -232,6 +232,32 @@ internal static partial class ArchitectureConventionsAnalyzer
         AnalyzeRap006BannedFileName(context, fileName);
     }
 
+    private static void AnalyzeReturnTypeContract(SyntaxNodeAnalysisContext context)
+    {
+        if (IsGeneratedFile(context.Node.SyntaxTree.FilePath))
+        {
+            return;
+        }
+
+        TypeSyntax returnType;
+        string ownerName;
+        switch (context.Node)
+        {
+            case MethodDeclarationSyntax method:
+                returnType = method.ReturnType;
+                ownerName = method.Identifier.ValueText;
+                break;
+            case LocalFunctionStatementSyntax localFunction:
+                returnType = localFunction.ReturnType;
+                ownerName = localFunction.Identifier.ValueText;
+                break;
+            default:
+                return;
+        }
+
+        AnalyzeRap013OptionalReturnType(context, returnType, ownerName);
+    }
+
     private static void AnalyzeNullableContractsAndState(SyntaxNodeAnalysisContext context)
     {
         if (context.Node is not NullableTypeSyntax nullableType)

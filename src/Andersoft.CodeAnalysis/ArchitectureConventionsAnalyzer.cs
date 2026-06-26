@@ -76,6 +76,7 @@ internal static partial class ArchitectureConventionsAnalyzer
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeMethodDeclaration(ctx)), SyntaxKind.MethodDeclaration);
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeCatchClause(ctx)), SyntaxKind.CatchClause);
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeNullableContractsAndState(ctx)), SyntaxKind.NullableType);
+            startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeReturnTypeContract(ctx)), SyntaxKind.MethodDeclaration, SyntaxKind.LocalFunctionStatement);
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeStronglyTypedIdMembers(ctx)), SyntaxKind.PropertyDeclaration, SyntaxKind.FieldDeclaration);
             startContext.RegisterSyntaxTreeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeFileName(ctx)));
 

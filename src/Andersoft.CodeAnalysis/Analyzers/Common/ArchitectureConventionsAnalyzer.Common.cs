@@ -457,4 +457,37 @@ internal static partial class ArchitectureConventionsAnalyzer
                 return false;
         }
     }
+
+    // Unwraps one level of Task<>/ValueTask<> from a return type so the underlying
+    // result type can be inspected (tolerating a qualified Task name). A non
+    // task-like type is returned unchanged.
+    private static TypeSyntax UnwrapTaskLikeReturnType(TypeSyntax returnType)
+    {
+        var type = returnType is QualifiedNameSyntax qualified ? qualified.Right : returnType;
+        if (type is GenericNameSyntax generic &&
+            generic.Identifier.ValueText is "Task" or "ValueTask" &&
+            generic.TypeArgumentList.Arguments.Count == 1)
+        {
+            return generic.TypeArgumentList.Arguments[0];
+        }
+
+        return returnType;
+    }
+
+    // True when the type is Option<T> (tolerating a qualified Option name),
+    // yielding the syntactic text of T.
+    private static bool TryGetOptionTypeArgument(TypeSyntax type, out string innerType)
+    {
+        innerType = string.Empty;
+        var candidate = type is QualifiedNameSyntax qualified ? qualified.Right : type;
+        if (candidate is GenericNameSyntax generic &&
+            generic.Identifier.ValueText == "Option" &&
+            generic.TypeArgumentList.Arguments.Count == 1)
+        {
+            innerType = generic.TypeArgumentList.Arguments[0].ToString();
+            return true;
+        }
+
+        return false;
+    }
 }
