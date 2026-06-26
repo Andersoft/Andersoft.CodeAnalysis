@@ -359,11 +359,10 @@ internal static partial class ArchitectureConventionsAnalyzer
         targetKind = string.Empty;
         targetName = string.Empty;
 
-        if (nullableType.Parent is MethodDeclarationSyntax method &&
-            ReferenceEquals(method.ReturnType, nullableType))
+        if (TryGetNullableReturnTypeOwner(nullableType, out var returnOwnerName))
         {
             targetKind = "Return type";
-            targetName = method.Identifier.ValueText;
+            targetName = returnOwnerName;
             return true;
         }
 
@@ -417,5 +416,45 @@ internal static partial class ArchitectureConventionsAnalyzer
         }
 
         return false;
+    }
+
+    // Detects a nullable type used as a method or local-function return type.
+    // Covers a directly nullable return (Foo? Bar()) as well as a nullable result
+    // wrapped one level in a task-like type (Task<Foo?> / ValueTask<Foo?> Bar()),
+    // which is the common async shape.
+    private static bool TryGetNullableReturnTypeOwner(NullableTypeSyntax nullableType, out string ownerName)
+    {
+        ownerName = string.Empty;
+
+        // The node that occupies the declaration's ReturnType slot. For a direct
+        // nullable return that is the nullable type itself; for Task<Foo?> it is
+        // the enclosing Task<>/ValueTask<> generic name.
+        SyntaxNode returnTypeNode = nullableType;
+        if (nullableType.Parent is TypeArgumentListSyntax typeArguments &&
+            typeArguments.Arguments.Count == 1 &&
+            typeArguments.Parent is GenericNameSyntax genericName &&
+            genericName.Identifier.ValueText is "Task" or "ValueTask")
+        {
+            returnTypeNode = genericName;
+        }
+
+        // Tolerate a qualified return type (e.g. System.Threading.Tasks.Task<Foo?>).
+        if (returnTypeNode.Parent is QualifiedNameSyntax qualifiedName &&
+            ReferenceEquals(qualifiedName.Right, returnTypeNode))
+        {
+            returnTypeNode = qualifiedName;
+        }
+
+        switch (returnTypeNode.Parent)
+        {
+            case MethodDeclarationSyntax method when ReferenceEquals(method.ReturnType, returnTypeNode):
+                ownerName = method.Identifier.ValueText;
+                return true;
+            case LocalFunctionStatementSyntax localFunction when ReferenceEquals(localFunction.ReturnType, returnTypeNode):
+                ownerName = localFunction.Identifier.ValueText;
+                return true;
+            default:
+                return false;
+        }
     }
 }
