@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -71,6 +73,9 @@ internal static partial class ArchitectureConventionsAnalyzer
 
         context.RegisterCompilationStartAction(startContext =>
         {
+            var parameterClumps = new ConcurrentDictionary<string, ConcurrentBag<(IMethodSymbol Method, Location Location)>>();
+            var enumSwitchSites = new ConcurrentDictionary<INamedTypeSymbol, ConcurrentBag<(INamedTypeSymbol? Container, Location Location)>>(SymbolEqualityComparer.Default);
+
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeUsingDirective(ctx)), SyntaxKind.UsingDirective);
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeNowMemberAccess(ctx)), SyntaxKind.SimpleMemberAccessExpression);
             startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeMethodDeclaration(ctx)), SyntaxKind.MethodDeclaration);
@@ -83,6 +88,83 @@ internal static partial class ArchitectureConventionsAnalyzer
             startContext.RegisterSymbolAction(
                 ctx => ExecuteForRule(ruleId, () => AnalyzeNamedType(ctx)),
                 SymbolKind.NamedType);
+            switch (ruleId)
+            {
+                case "RAP031": RegisterMemberAction(startContext, ruleId, AnalyzeCyclomaticComplexity); break;
+                case "RAP032": RegisterMemberAction(startContext, ruleId, AnalyzeCognitiveComplexity); break;
+                case "RAP033": RegisterMemberAction(startContext, ruleId, AnalyzeHalsteadComplexity); break;
+                case "RAP034": RegisterMemberAction(startContext, ruleId, AnalyzeMaintainabilityIndex); break;
+                case "RAP035": RegisterMemberAction(startContext, ruleId, AnalyzeNPathComplexity); break;
+                case "RAP036":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeLongParameterList(ctx)), SyntaxKind.MethodDeclaration, SyntaxKind.ConstructorDeclaration, SyntaxKind.LocalFunctionStatement, SyntaxKind.DelegateDeclaration);
+                    break;
+                case "RAP037": RegisterClassAction(startContext, ruleId, AnalyzeLargeClass); break;
+                case "RAP039":
+                    startContext.RegisterSymbolAction(ctx => ExecuteForRule(ruleId, () => CollectParameterClumps(ctx, parameterClumps)), SymbolKind.Method);
+                    startContext.RegisterCompilationEndAction(ctx => ExecuteForRule(ruleId, () => AnalyzeRap039DataClumps(ctx, parameterClumps)));
+                    break;
+                case "RAP040":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeMessageChain(ctx)), SyntaxKind.SimpleMemberAccessExpression);
+                    break;
+                case "RAP041": RegisterClassAction(startContext, ruleId, AnalyzeTemporaryField); break;
+                case "RAP042":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeFeatureEnvy(ctx)), SyntaxKind.MethodDeclaration);
+                    break;
+                case "RAP043":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => CollectEnumSwitchSites(ctx, enumSwitchSites)), SyntaxKind.SwitchStatement, SyntaxKind.SwitchExpression);
+                    startContext.RegisterCompilationEndAction(ctx => ExecuteForRule(ruleId, () => AnalyzeRap043RepeatedSwitches(ctx, enumSwitchSites)));
+                    break;
+                case "RAP044": RegisterClassAction(startContext, ruleId, AnalyzeMiddleMan); break;
+                case "RAP045": RegisterClassAction(startContext, ruleId, AnalyzeLazyClass); break;
+                case "RAP046": RegisterClassAction(startContext, ruleId, AnalyzeAnemicDomainClass); break;
+                case "RAP049": RegisterClassAction(startContext, ruleId, AnalyzeEndpointOperationCount); break;
+                case "RAP050":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeHardCodedRole(ctx)), SyntaxKind.InvocationExpression);
+                    break;
+                case "RAP051":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeCatchAllResultMapping(ctx)), SyntaxKind.SwitchExpression);
+                    break;
+                case "RAP052":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeManualServerSentEvents(ctx)), SyntaxKind.MethodDeclaration);
+                    break;
+                case "RAP053": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeCreatedLocation); break;
+                case "RAP054": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeDuplicateCurrentUserInputs); break;
+                case "RAP055": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeUntypedEndpointResult); break;
+                case "RAP056": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeBooleanHttpMappingParameter); break;
+                case "RAP057": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeAbandonedWhenAnyTask); break;
+                case "RAP058": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeManualJsonTextResponse); break;
+                case "RAP059": RegisterPresentationMethodAction(startContext, ruleId, AnalyzePresentationTimestampRepair); break;
+                case "RAP060": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeHandlerLocalAuthorization); break;
+            }
         });
     }
+
+    private static void RegisterMemberAction(
+        CompilationStartAnalysisContext context,
+        string ruleId,
+        Action<SyntaxNodeAnalysisContext> action) =>
+        context.RegisterSyntaxNodeAction(
+            ctx => ExecuteForRule(ruleId, () => action(ctx)),
+            SyntaxKind.MethodDeclaration,
+            SyntaxKind.ConstructorDeclaration,
+            SyntaxKind.LocalFunctionStatement,
+            SyntaxKind.GetAccessorDeclaration,
+            SyntaxKind.SetAccessorDeclaration,
+            SyntaxKind.InitAccessorDeclaration);
+
+    private static void RegisterClassAction(
+        CompilationStartAnalysisContext context,
+        string ruleId,
+        Action<SyntaxNodeAnalysisContext> action) =>
+        context.RegisterSyntaxNodeAction(
+            ctx => ExecuteForRule(ruleId, () => action(ctx)),
+            SyntaxKind.ClassDeclaration);
+
+    private static void RegisterPresentationMethodAction(
+        CompilationStartAnalysisContext context,
+        string ruleId,
+        Action<SyntaxNodeAnalysisContext> action) =>
+        context.RegisterSyntaxNodeAction(
+            ctx => ExecuteForRule(ruleId, () => action(ctx)),
+            SyntaxKind.MethodDeclaration);
 }

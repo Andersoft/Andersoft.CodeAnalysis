@@ -3,4 +3,7 @@
     <Project Path="src/Andersoft.CodeAnalysis.EntityFramework/Andersoft.CodeAnalysis.EntityFramework.csproj" />
     <Project Path="src/Andersoft.CodeAnalysis/Andersoft.CodeAnalysis.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Andersoft.CodeAnalysis.Tests/Andersoft.CodeAnalysis.Tests.csproj" />
+  </Folder>
 </Solution>

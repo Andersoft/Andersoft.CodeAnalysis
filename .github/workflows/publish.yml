@@ -8,9 +8,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
+    runs-on: self-hosted
     strategy:
       matrix:
         project:
@@ -43,16 +41,9 @@ jobs:
       - name: Pack
         run: dotnet pack ${{ matrix.project.path }} --configuration Release --no-build --output ./nupkgs -p:Version=${{ env.VERSION }}
 
-      - name: Publish to GitHub Packages
+      - name: Publish to private NuGet feed
         run: >
           dotnet nuget push ./nupkgs/${{ matrix.project.name }}.*.nupkg
-          --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
-          --api-key ${{ secrets.GITHUB_TOKEN }}
-          --skip-duplicate
-
-      - name: Publish to NuGet.org
-        run: >
-          dotnet nuget push ./nupkgs/${{ matrix.project.name }}.*.nupkg
-          --source https://api.nuget.org/v3/index.json
-          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://nuget.pixelandcode.co/v3/index.json
+          --api-key ${{ secrets.PRIVATE_NUGET_API_KEY }}
           --skip-duplicate
