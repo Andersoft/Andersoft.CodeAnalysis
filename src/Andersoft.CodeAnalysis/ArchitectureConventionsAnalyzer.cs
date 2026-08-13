@@ -138,6 +138,18 @@ internal static partial class ArchitectureConventionsAnalyzer
                 case "RAP061":
                     startContext.RegisterSymbolAction(ctx => ExecuteForRule(ruleId, () => AnalyzeMessageHandlerReturnType(ctx)), SymbolKind.NamedType);
                     break;
+                case "RAP026":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeRap026NullForgivingWithoutJustification(
+                        ctx,
+                        (PostfixUnaryExpressionSyntax)ctx.Node,
+                        GetContainingNamespace(ctx.Node))), SyntaxKind.SuppressNullableWarningExpression);
+                    break;
+                case "RAP028":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeMissingCancellationToken(ctx)), SyntaxKind.InvocationExpression);
+                    break;
+                case "RAP030":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeDefaultCancellationToken(ctx)), SyntaxKind.Parameter);
+                    break;
                 case "RAP062":
                     startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeIfStatementBody(ctx)), SyntaxKind.IfStatement);
                     startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeExpressionBodiedMethod(ctx)), SyntaxKind.MethodDeclaration);
