@@ -135,6 +135,18 @@ internal static partial class ArchitectureConventionsAnalyzer
                 case "RAP058": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeManualJsonTextResponse); break;
                 case "RAP059": RegisterPresentationMethodAction(startContext, ruleId, AnalyzePresentationTimestampRepair); break;
                 case "RAP060": RegisterPresentationMethodAction(startContext, ruleId, AnalyzeHandlerLocalAuthorization); break;
+                case "RAP061":
+                    startContext.RegisterSymbolAction(ctx => ExecuteForRule(ruleId, () => AnalyzeMessageHandlerReturnType(ctx)), SymbolKind.NamedType);
+                    break;
+                case "RAP062":
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeIfStatementBody(ctx)), SyntaxKind.IfStatement);
+                    startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeExpressionBodiedMethod(ctx)), SyntaxKind.MethodDeclaration);
+                    startContext.RegisterSyntaxNodeAction(
+                        ctx => ExecuteForRule(ruleId, () => AnalyzeExpressionBodiedLambda(ctx)),
+                        SyntaxKind.SimpleLambdaExpression,
+                        SyntaxKind.ParenthesizedLambdaExpression);
+                    startContext.RegisterSyntaxTreeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeBracePlacement(ctx)));
+                    break;
             }
         });
     }
