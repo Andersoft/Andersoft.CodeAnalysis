@@ -85,6 +85,11 @@ internal static partial class ArchitectureConventionsAnalyzer
         foreach (var brace in root.DescendantTokens().Where(token =>
                      token.IsKind(SyntaxKind.OpenBraceToken) || token.IsKind(SyntaxKind.CloseBraceToken)))
         {
+            if (brace.Parent is AccessorListSyntax)
+            {
+                continue;
+            }
+
             var line = text.Lines.GetLineFromPosition(brace.SpanStart);
             if (line.ToString().Trim() == brace.Text)
             {

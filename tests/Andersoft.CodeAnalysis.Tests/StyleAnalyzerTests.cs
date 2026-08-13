@@ -111,4 +111,36 @@ public sealed class StyleAnalyzerTests
 
         Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
     }
+
+    [Fact]
+    public async Task InlineGetterAndSetterBracesAreAccepted()
+    {
+        const string source = """
+            sealed class Example
+            {
+                public int Position { get; private set; }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
+
+    [Fact]
+    public async Task GetterBodyBracesMustStillBeOnSeparateLines()
+    {
+        const string source = """
+            sealed class Example
+            {
+                public int Position
+                {
+                    get { return 1; }
+                }
+            }
+            """;
+
+        var diagnostics = await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer());
+
+        Assert.Equal(2, diagnostics.Length);
+        Assert.All(diagnostics, diagnostic => Assert.Contains("must be on its own line", diagnostic.GetMessage()));
+    }
 }
