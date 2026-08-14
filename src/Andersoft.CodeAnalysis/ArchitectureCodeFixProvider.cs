@@ -209,7 +209,7 @@ public sealed class ArchitectureCodeFixProvider : CodeFixProvider
         var changes = root.DescendantTokens()
             .Where(token =>
                 (token.IsKind(SyntaxKind.OpenBraceToken) || token.IsKind(SyntaxKind.CloseBraceToken)) &&
-                token.Parent is not AccessorListSyntax)
+                token.Parent is not AccessorListSyntax and not InterpolationSyntax)
             .SelectMany(token => GetBraceLineChanges(text, token))
             .OrderByDescending(change => change.Span.Start)
             .ToArray();
@@ -236,7 +236,7 @@ public sealed class ArchitectureCodeFixProvider : CodeFixProvider
         }
 
         var allowsTrailingText = brace.IsKind(SyntaxKind.CloseBraceToken) &&
-            brace.Parent is BlockSyntax { Parent: LambdaExpressionSyntax };
+            brace.Parent is BlockSyntax { Parent: LambdaExpressionSyntax } or SwitchExpressionSyntax;
         if (!string.IsNullOrWhiteSpace(suffix) && !allowsTrailingText)
         {
             builder.Add(new TextChange(new TextSpan(brace.Span.End, 0), "\n" + indentation));

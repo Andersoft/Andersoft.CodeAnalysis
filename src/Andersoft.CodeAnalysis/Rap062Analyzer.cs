@@ -85,7 +85,7 @@ internal static partial class ArchitectureConventionsAnalyzer
         foreach (var brace in root.DescendantTokens().Where(token =>
                      token.IsKind(SyntaxKind.OpenBraceToken) || token.IsKind(SyntaxKind.CloseBraceToken)))
         {
-            if (brace.Parent is AccessorListSyntax)
+            if (brace.Parent is AccessorListSyntax or InterpolationSyntax)
             {
                 continue;
             }
@@ -94,7 +94,7 @@ internal static partial class ArchitectureConventionsAnalyzer
             var prefix = text.ToString(Microsoft.CodeAnalysis.Text.TextSpan.FromBounds(line.Start, brace.SpanStart));
             var suffix = text.ToString(Microsoft.CodeAnalysis.Text.TextSpan.FromBounds(brace.Span.End, line.End));
             var allowsTrailingText = brace.IsKind(SyntaxKind.CloseBraceToken) &&
-                brace.Parent is BlockSyntax { Parent: LambdaExpressionSyntax };
+                brace.Parent is BlockSyntax { Parent: LambdaExpressionSyntax } or SwitchExpressionSyntax;
             if (string.IsNullOrWhiteSpace(prefix) &&
                 (string.IsNullOrWhiteSpace(suffix) || allowsTrailingText))
             {

@@ -186,4 +186,61 @@ public sealed class StyleAnalyzerTests
 
         Assert.Contains("must be on its own line", diagnostic.GetMessage());
     }
+
+    [Fact]
+    public async Task SwitchExpressionClosingBraceMayShareLineWithSemicolon()
+    {
+        const string source = """
+            sealed class Example
+            {
+                string GetName(int value)
+                {
+                    return value switch
+                    {
+                        1 => "one",
+                        _ => "other"
+                    };
+                }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
+
+    [Fact]
+    public async Task SwitchExpressionClosingBraceMustStillStartItsOwnLine()
+    {
+        const string source = """
+            sealed class Example
+            {
+                string GetName(int value)
+                {
+                    return value switch
+                    {
+                        1 => "one",
+                        _ => "other" };
+                }
+            }
+            """;
+
+        var diagnostic = Assert.Single(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+
+        Assert.Contains("must be on its own line", diagnostic.GetMessage());
+    }
+
+    [Fact]
+    public async Task InterpolationBracesMayRemainInline()
+    {
+        const string source = """
+            sealed class Example
+            {
+                string GetCollectionName<TDocument>(string prefix)
+                {
+                    return $"{prefix}{typeof(TDocument).Name}";
+                }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
 }
