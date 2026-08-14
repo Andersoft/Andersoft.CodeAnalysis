@@ -243,4 +243,92 @@ public sealed class StyleAnalyzerTests
 
         Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
     }
+
+    [Fact]
+    public async Task InitializerClosingBraceMayShareLineWithSemicolon()
+    {
+        const string source = """
+            sealed class Options
+            {
+                public bool Enabled { get; set; }
+            }
+
+            sealed class Example
+            {
+                Options Create()
+                {
+                    return new Options
+                    {
+                        Enabled = true
+                    };
+                }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
+
+    [Fact]
+    public async Task InitializerClosingBraceMustStillStartItsOwnLine()
+    {
+        const string source = """
+            sealed class Options
+            {
+                public bool Enabled { get; set; }
+            }
+
+            sealed class Example
+            {
+                Options Create()
+                {
+                    return new Options
+                    {
+                        Enabled = true };
+                }
+            }
+            """;
+
+        var diagnostic = Assert.Single(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+
+        Assert.Contains("must be on its own line", diagnostic.GetMessage());
+    }
+
+    [Fact]
+    public async Task CollectionInitializerClosingBraceMayShareLineWithConstructorClosingTokens()
+    {
+        const string source = """
+            using System.Collections.Generic;
+
+            sealed record Invalid(Dictionary<string, string[]> Errors);
+
+            sealed class Example
+            {
+                Invalid Create()
+                {
+                    return new Invalid(new Dictionary<string, string[]>
+                    {
+                        ["kidId"] = ["The assigned profile is not part of this family."]
+                    });
+                }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
+
+    [Fact]
+    public async Task PropertyPatternBracesMayRemainInline()
+    {
+        const string source = """
+            sealed class Example
+            {
+                int? Create(int? memberId)
+                {
+                    return memberId is { } id ? id : null;
+                }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
 }
