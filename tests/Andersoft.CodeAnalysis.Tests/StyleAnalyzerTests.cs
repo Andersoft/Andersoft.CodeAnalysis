@@ -143,4 +143,47 @@ public sealed class StyleAnalyzerTests
         Assert.Equal(2, diagnostics.Length);
         Assert.All(diagnostics, diagnostic => Assert.Contains("must be on its own line", diagnostic.GetMessage()));
     }
+
+    [Fact]
+    public async Task LambdaClosingBraceMayShareLineWithInvocationClosingTokens()
+    {
+        const string source = """
+            using System;
+
+            sealed class Example
+            {
+                void Register(Action<Action> register)
+                {
+                    register(action =>
+                    {
+                        action();
+                    });
+                }
+            }
+            """;
+
+        Assert.Empty(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+    }
+
+    [Fact]
+    public async Task LambdaClosingBraceMustStillStartItsOwnLine()
+    {
+        const string source = """
+            using System;
+
+            sealed class Example
+            {
+                void Register(Action<Action> register)
+                {
+                    register(action =>
+                    {
+                        action(); });
+                }
+            }
+            """;
+
+        var diagnostic = Assert.Single(await AnalyzerTestHarness.AnalyzeAsync(source, new Rap062Analyzer()));
+
+        Assert.Contains("must be on its own line", diagnostic.GetMessage());
+    }
 }

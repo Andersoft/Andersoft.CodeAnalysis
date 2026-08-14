@@ -91,7 +91,12 @@ internal static partial class ArchitectureConventionsAnalyzer
             }
 
             var line = text.Lines.GetLineFromPosition(brace.SpanStart);
-            if (line.ToString().Trim() == brace.Text)
+            var prefix = text.ToString(Microsoft.CodeAnalysis.Text.TextSpan.FromBounds(line.Start, brace.SpanStart));
+            var suffix = text.ToString(Microsoft.CodeAnalysis.Text.TextSpan.FromBounds(brace.Span.End, line.End));
+            var allowsTrailingText = brace.IsKind(SyntaxKind.CloseBraceToken) &&
+                brace.Parent is BlockSyntax { Parent: LambdaExpressionSyntax };
+            if (string.IsNullOrWhiteSpace(prefix) &&
+                (string.IsNullOrWhiteSpace(suffix) || allowsTrailingText))
             {
                 continue;
             }

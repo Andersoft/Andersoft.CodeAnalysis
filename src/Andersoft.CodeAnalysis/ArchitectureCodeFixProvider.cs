@@ -235,7 +235,9 @@ public sealed class ArchitectureCodeFixProvider : CodeFixProvider
             builder.Add(new TextChange(new TextSpan(brace.SpanStart, 0), "\n" + indentation));
         }
 
-        if (!string.IsNullOrWhiteSpace(suffix))
+        var allowsTrailingText = brace.IsKind(SyntaxKind.CloseBraceToken) &&
+            brace.Parent is BlockSyntax { Parent: LambdaExpressionSyntax };
+        if (!string.IsNullOrWhiteSpace(suffix) && !allowsTrailingText)
         {
             builder.Add(new TextChange(new TextSpan(brace.Span.End, 0), "\n" + indentation));
         }
