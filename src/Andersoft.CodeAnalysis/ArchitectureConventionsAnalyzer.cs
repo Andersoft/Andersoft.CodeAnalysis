@@ -159,6 +159,21 @@ internal static partial class ArchitectureConventionsAnalyzer
                         SyntaxKind.ParenthesizedLambdaExpression);
                     startContext.RegisterSyntaxTreeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeBracePlacement(ctx)));
                     break;
+                case "RAP063":
+                    startContext.RegisterSyntaxNodeAction(
+                        ctx => ExecuteForRule(ruleId, () => AnalyzeJsonDomContract(ctx)),
+                        SyntaxKind.Parameter,
+                        SyntaxKind.MethodDeclaration,
+                        SyntaxKind.LocalFunctionStatement,
+                        SyntaxKind.DelegateDeclaration,
+                        SyntaxKind.PropertyDeclaration,
+                        SyntaxKind.IndexerDeclaration,
+                        SyntaxKind.FieldDeclaration,
+                        SyntaxKind.EventFieldDeclaration,
+                        SyntaxKind.EventDeclaration,
+                        SyntaxKind.OperatorDeclaration,
+                        SyntaxKind.ConversionOperatorDeclaration);
+                    break;
             }
         });
     }
