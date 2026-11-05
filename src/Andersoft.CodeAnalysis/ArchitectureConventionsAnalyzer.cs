@@ -174,6 +174,13 @@ internal static partial class ArchitectureConventionsAnalyzer
                         SyntaxKind.OperatorDeclaration,
                         SyntaxKind.ConversionOperatorDeclaration);
                     break;
+                case "RAP064":
+                    startContext.RegisterSyntaxNodeAction(
+                        ctx => ExecuteForRule(ruleId, () => AnalyzeMessageHandlerDependency(ctx)),
+                        SyntaxKind.Parameter,
+                        SyntaxKind.PropertyDeclaration,
+                        SyntaxKind.FieldDeclaration);
+                    break;
             }
         });
     }
