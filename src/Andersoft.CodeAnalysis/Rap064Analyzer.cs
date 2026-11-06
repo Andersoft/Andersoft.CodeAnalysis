@@ -13,7 +13,7 @@ public sealed class Rap064Analyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor Rule = new(
         "RAP064",
         "Message handlers must not be injected as dependencies",
-        "'{0}' depends on message handler type '{1}' — handlers are processing entry points, not injectable services; dispatch a message instead",
+        "'{0}' depends on message handler type '{1}' — handlers are processing entry points, not injectable services; abstract out the shared logic to a separate service",
         "Architecture",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
