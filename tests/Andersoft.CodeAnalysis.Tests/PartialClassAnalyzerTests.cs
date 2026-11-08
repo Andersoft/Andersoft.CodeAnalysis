@@ -19,7 +19,7 @@ public sealed class PartialClassAnalyzerTests
         Assert.Equal("RAP066", diagnostic.Id);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.Equal("Handler", source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
-        Assert.Contains("distinct responsibilities", diagnostic.GetMessage());
+        Assert.Equal("Class 'Handler' is partial; do not split classes into partial, use a single declaration instead", diagnostic.GetMessage());
     }
 
     [Fact]

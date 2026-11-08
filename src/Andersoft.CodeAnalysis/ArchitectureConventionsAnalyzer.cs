@@ -99,6 +99,7 @@ internal static partial class ArchitectureConventionsAnalyzer
                     startContext.RegisterSyntaxNodeAction(ctx => ExecuteForRule(ruleId, () => AnalyzeLongParameterList(ctx)), SyntaxKind.MethodDeclaration, SyntaxKind.ConstructorDeclaration, SyntaxKind.LocalFunctionStatement, SyntaxKind.DelegateDeclaration);
                     break;
                 case "RAP037": RegisterClassAction(startContext, ruleId, AnalyzeLargeClass); break;
+                case "RAP068": RegisterClassAction(startContext, ruleId, AnalyzeLargeAggregate); break;
                 case "RAP039":
                     startContext.RegisterSymbolAction(ctx => ExecuteForRule(ruleId, () => CollectParameterClumps(ctx, parameterClumps)), SymbolKind.Method);
                     startContext.RegisterCompilationEndAction(ctx => ExecuteForRule(ruleId, () => AnalyzeRap039DataClumps(ctx, parameterClumps)));

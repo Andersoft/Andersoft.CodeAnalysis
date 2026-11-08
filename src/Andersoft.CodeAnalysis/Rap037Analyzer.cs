@@ -32,6 +32,12 @@ internal static partial class ArchitectureConventionsAnalyzer
     private const int MaxClassLineCount = 400;
 
     private static void AnalyzeLargeClass(SyntaxNodeAnalysisContext context)
+        => AnalyzeClassSize(context, aggregatesOnly: false);
+
+    private static void AnalyzeLargeAggregate(SyntaxNodeAnalysisContext context)
+        => AnalyzeClassSize(context, aggregatesOnly: true);
+
+    private static void AnalyzeClassSize(SyntaxNodeAnalysisContext context, bool aggregatesOnly)
     {
         if (context.Node is not ClassDeclarationSyntax classDeclaration)
         {
@@ -55,8 +61,25 @@ internal static partial class ArchitectureConventionsAnalyzer
             return;
         }
 
+        var classSymbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration, context.CancellationToken) as INamedTypeSymbol;
+        var inheritsAggregate = false;
+        for (var baseType = classSymbol?.BaseType; baseType is not null; baseType = baseType.BaseType)
+        {
+            if (baseType.Name == "Aggregate" && baseType.Arity == 1 &&
+                baseType.IsAbstract && baseType.DeclaredAccessibility == Accessibility.Public)
+            {
+                inheritsAggregate = true;
+                break;
+            }
+        }
+
+        if (inheritsAggregate != aggregatesOnly)
+        {
+            return;
+        }
+
         Report(context, Diagnostic.Create(
-            Rap037Analyzer.Rule,
+            aggregatesOnly ? Rap068Analyzer.Rule : Rap037Analyzer.Rule,
             classDeclaration.Identifier.GetLocation(),
             classDeclaration.Identifier.ValueText,
             memberCount,
