@@ -12,7 +12,7 @@ public sealed class Rap066Analyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor Rule = new(
         "RAP066",
         "Classes must not be split into partial declarations",
-        "Class '{0}' is partial; extract smaller classes with distinct responsibilities instead of splitting one class into partial declarations",
+        "Class '{0}' is partial; do not split classes into partial, use a single declaration instead",
         "Architecture",
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
